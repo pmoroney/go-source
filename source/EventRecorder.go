@@ -1,5 +1,7 @@
 package source
 
+import "log"
+
 type EventRecorder interface {
 	// Records the given event.
 	Record(EventMessage)
@@ -25,6 +27,7 @@ func (r InMemoryEventRecorder) Record(e EventMessage) {
 		r.events[e.ID] = make([]Event, 0)
 	}
 	r.events[e.ID] = append(r.events[e.ID], e.Evt)
+	log.Printf("Recorded Event: %+v\n", e)
 }
 
 func (r InMemoryEventRecorder) GetEvents(id EventSourceID) ([]Event, error) {
