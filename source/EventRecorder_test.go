@@ -5,17 +5,14 @@ import (
 )
 
 type TestEvent struct {
-	id  EventSourceID
 	Foo string
-}
-
-func (t TestEvent) Apply(ar interface{}) {
 }
 
 // Make sure we can record events
 func TestRecord(t *T) {
+	Register(TestEvent{})
 	event := EventMessage{
-		Evt: TestEvent{
+		Data: TestEvent{
 			Foo: "bar",
 		},
 		ID:    NewEventSourceID(),
@@ -37,8 +34,9 @@ func TestRecord(t *T) {
 
 // Make sure we can record events, even if they are the same
 func TestRecordSameEventTwice(t *T) {
+	Register(TestEvent{})
 	event := EventMessage{
-		Evt: TestEvent{
+		Data: TestEvent{
 			Foo: "bar",
 		},
 		ID:    NewEventSourceID(),

@@ -26,7 +26,7 @@ func (r InMemoryEventRecorder) Record(e EventMessage) {
 	if !ok {
 		r.events[e.ID] = make([]Event, 0)
 	}
-	r.events[e.ID] = append(r.events[e.ID], e.Evt)
+	r.events[e.ID] = append(r.events[e.ID], e.Data)
 	log.Printf("Recorded Event: %+v\n", e)
 }
 

@@ -9,5 +9,5 @@ type CommandMessage struct {
 	Cmd        Command
 	ID         EventSourceID
 	Err        chan error
-	EmptyState interface{}
+	EmptyState eventState
 }
