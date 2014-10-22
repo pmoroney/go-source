@@ -41,11 +41,13 @@ func (source *EventSource) Handle(cmd CommandMessage) {
 	}
 }
 
-func (source *EventSource) Run() {
-	// this start a goroutine that will run forever and just receive and handle commands
-	go func() {
-		for {
-			source.Handle(<-source.CommandChan)
-		}
-	}()
+func (source *EventSource) Serve() {
+	// this start a goroutine that will run while the command channel is open
+	for c := range source.CommandChan {
+		source.Handle(c)
+	}
+}
+
+func (source *EventSource) Stop() {
+	close(source.CommandChan)
 }

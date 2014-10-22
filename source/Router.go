@@ -1,26 +1,35 @@
 package source
 
+import "github.com/thejerf/suture"
+
 type Router interface {
 	Route(CommandMessage) error
-	StartStore(EventRecorder)
+	SetStore(EventRecorder)
+	suture.Service
 }
 
 type DefaultRouter struct {
-	agents  map[EventSourceID]chan<- CommandMessage
-	store   EventRecorder
-	persist chan EventMessage
+	agents     map[EventSourceID]chan<- CommandMessage
+	store      EventRecorder
+	persist    chan EventMessage
+	supervisor *suture.Supervisor
 }
 
-func (r *DefaultRouter) StartStore(store EventRecorder) {
+func (r *DefaultRouter) SetStore(store EventRecorder) {
 	r.store = store
 	r.persist = make(chan EventMessage)
+	r.supervisor = suture.NewSimple("Router")
+}
 
-	go func() {
-		for {
-			event := <-r.persist
-			r.store.Record(event)
-		}
-	}()
+func (r *DefaultRouter) Serve() {
+	r.supervisor.ServeBackground()
+	for event := range r.persist {
+		r.store.Record(event)
+	}
+}
+
+func (r *DefaultRouter) Stop() {
+	close(r.persist)
 }
 
 func (r *DefaultRouter) Route(cmd CommandMessage) error {
@@ -56,7 +65,7 @@ func (r *DefaultRouter) startAgent(cmd CommandMessage) (chan<- CommandMessage, e
 
 	ar = r.newAgent(cmd)
 
-	ar.Run()
+	r.supervisor.Add(&ar)
 
 	r.agents[ar.ID] = ar.CommandChan
 	return ar.CommandChan, nil
