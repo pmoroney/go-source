@@ -35,26 +35,29 @@ func (r *DefaultRouter) Route(cmd CommandMessage) error {
 			return err
 		}
 	}
-	cmd.Err = make(chan error)
 	agent <- cmd
-	err := <-cmd.Err
-	return err
+	return nil
 }
 
 func (r *DefaultRouter) startAgent(cmd CommandMessage) (chan<- CommandMessage, error) {
 	if r.agents == nil {
 		r.agents = make(map[EventSourceID]chan<- CommandMessage, 0)
 	}
+
 	events, err := r.store.GetEvents(cmd.ID)
 	if err != nil {
 		return nil, err
 	}
+
 	var ar EventSource
 	if events != nil {
 		ar = r.loadAgent(cmd, events)
 	}
+
 	ar = r.newAgent(cmd)
+
 	ar.Run()
+
 	r.agents[ar.ID] = ar.CommandChan
 	return ar.CommandChan, nil
 }

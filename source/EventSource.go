@@ -35,7 +35,10 @@ func (source *EventSource) Persist(event Event) {
 }
 
 func (source *EventSource) Handle(cmd CommandMessage) {
-	cmd.Err <- cmd.Cmd.Handle(source)
+	err := cmd.Cmd.Handle(source)
+	if cmd.Err != nil {
+		cmd.Err <- err
+	}
 }
 
 func (source *EventSource) Run() {

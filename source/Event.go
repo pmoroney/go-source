@@ -30,8 +30,8 @@ func Unserialize(data []byte) (*EventMessage, error) {
 	raw := new(struct {
 		ID        EventSourceID
 		SeqID     uint64
-		EventType string
 		Timestamp time.Time
+		EventType string
 		Data      json.RawMessage
 	})
 
