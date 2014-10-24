@@ -1,30 +1,25 @@
-package source
+package redis
 
 import (
 	. "testing"
 	"time"
 
 	"github.com/garyburd/redigo/redis"
+	"github.com/pmoroney/go-source/event"
 )
 
-/*
-// these are defined in another test file
 type TestEvent struct {
-	id  EventSourceID
 	Foo string
 }
 
-func (t TestEvent) Apply(ar interface{}) {
-}
-*/
-
 // Make sure we can record events
 func TestRedisRecord(t *T) {
-	event := EventMessage{
+	event.Register(TestEvent{})
+	event := event.EventMessage{
 		Data: TestEvent{
 			Foo: "bar",
 		},
-		ID:        NewEventSourceID(),
+		ID:        event.NewID(),
 		SeqID:     1,
 		Timestamp: time.Now(),
 		EventType: "TestEvent",
@@ -46,7 +41,7 @@ func TestRedisRecord(t *T) {
 		},
 	}
 
-	recoder := NewRedisEventRecorder(redisTestServer)
+	recoder := NewRedisEventStore(redisTestServer)
 	recoder.Record(event)
 
 	events, err := recoder.GetEvents(event.ID)
@@ -61,11 +56,12 @@ func TestRedisRecord(t *T) {
 
 // Make sure we can record events, even if they are the same
 func TestRedisRecordSameEventTwice(t *T) {
-	event := EventMessage{
+	event.Register(TestEvent{})
+	event := event.EventMessage{
 		Data: TestEvent{
 			Foo: "bar",
 		},
-		ID:        NewEventSourceID(),
+		ID:        event.NewID(),
 		SeqID:     1,
 		Timestamp: time.Now(),
 		EventType: "TestEvent",
@@ -87,7 +83,7 @@ func TestRedisRecordSameEventTwice(t *T) {
 		},
 	}
 
-	recoder := NewRedisEventRecorder(redisTestServer)
+	recoder := NewRedisEventStore(redisTestServer)
 	recoder.Record(event)
 	event.SeqID = 2
 	recoder.Record(event)

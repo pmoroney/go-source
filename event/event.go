@@ -1,34 +1,41 @@
-package source
+package event
 
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"reflect"
 	"time"
 )
 
-// Represents an event payload that can be fired by event sources.
+// Event Represents an event payload that can be fired by event sources.
 // An event should:
 // * Name is in past tense.
 // * Name contains the intent (CustomerMoved vs CustomerAddressCorrected).
 // * Contain all the data related to the event.
 type Event interface{}
 
-type EventMessage struct {
-	ID        EventSourceID
+// Message contains all the metadata related to an event
+type Message struct {
+	ID        ID
 	SeqID     uint64
 	Timestamp time.Time
 	EventType string
 	Data      Event
 }
 
-func (e EventMessage) Serialize() ([]byte, error) {
+// Serialize serializes an event for storage in a Store.
+// It currently uses JSON but this can be changed.
+// A pluggable serializer would be nice as well
+func (e Message) Serialize() ([]byte, error) {
 	return json.Marshal(e)
 }
 
-func Unserialize(data []byte) (*EventMessage, error) {
+// Unserialize unserializes an event from the Store.
+// All types that are going to be unserialezed need to be registered by Registrar() or RegistrarType()
+func Unserialize(data []byte) (*Message, error) {
 	raw := new(struct {
-		ID        EventSourceID
+		ID        ID
 		SeqID     uint64
 		Timestamp time.Time
 		EventType string
@@ -40,7 +47,7 @@ func Unserialize(data []byte) (*EventMessage, error) {
 		return nil, err
 	}
 
-	e := new(EventMessage)
+	e := new(Message)
 	e.ID = raw.ID
 	e.SeqID = raw.SeqID
 	e.Timestamp = raw.Timestamp
@@ -53,6 +60,7 @@ func Unserialize(data []byte) (*EventMessage, error) {
 
 	eventValue := reflect.New(eventType)
 	event := eventValue.Interface()
+	log.Printf("Event raw: %#v\n", event)
 	if err := json.Unmarshal(raw.Data, &event); err != nil {
 		return nil, err
 	}

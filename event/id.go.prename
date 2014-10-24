@@ -1,44 +1,44 @@
-package source
+package event
 
 import "github.com/pjvds/gouuid"
 
-type EventSourceID uuid.UUID
+type ID uuid.UUID
 
-func NewEventSourceID() EventSourceID {
+func NewEventSourceID() ID {
 	guid, err := uuid.NewV4()
 	if err != nil {
 		panic(err)
 	}
 
-	return EventSourceID(*guid)
+	return ID(*guid)
 }
 
-func ParseEventSourceID(value string) (id EventSourceID, err error) {
+func ParseID(value string) (id ID, err error) {
 	guid := new(uuid.UUID)
 	if guid, err = uuid.ParseHex(value); err == nil {
-		id = EventSourceID(*guid)
+		id = ID(*guid)
 	}
 
 	return
 }
 
-func (id EventSourceID) String() string {
+func (id ID) String() string {
 	guid := uuid.UUID(id)
 	return guid.String()
 }
 
-func (id EventSourceID) MarshalJSON() ([]byte, error) {
+func (id ID) MarshalJSON() ([]byte, error) {
 	value := uuid.UUID(id)
 	return value.MarshalJSON()
 }
 
-func (id *EventSourceID) UnmarshalJSON(b []byte) error {
+func (id *ID) UnmarshalJSON(b []byte) error {
 	value := uuid.UUID(*id)
 	err := value.UnmarshalJSON(b)
 	if err != nil {
 		return err
 	}
 
-	*id = EventSourceID(value)
+	*id = ID(value)
 	return nil
 }

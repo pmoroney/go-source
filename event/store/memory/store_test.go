@@ -1,7 +1,9 @@
-package source
+package memory
 
 import (
 	. "testing"
+
+	"github.com/pmoroney/go-source/event"
 )
 
 type TestEvent struct {
@@ -10,16 +12,16 @@ type TestEvent struct {
 
 // Make sure we can record events
 func TestRecord(t *T) {
-	Register(TestEvent{})
-	event := EventMessage{
+	event.Register(TestEvent{})
+	event := event.Message{
 		Data: TestEvent{
 			Foo: "bar",
 		},
-		ID:    NewEventSourceID(),
+		ID:    event.NewID(),
 		SeqID: 1,
 	}
 
-	recoder := NewInMemoryEventRecorder()
+	recoder := NewInMemoryEventStore()
 	recoder.Record(event)
 
 	events, err := recoder.GetEvents(event.ID)
@@ -34,16 +36,16 @@ func TestRecord(t *T) {
 
 // Make sure we can record events, even if they are the same
 func TestRecordSameEventTwice(t *T) {
-	Register(TestEvent{})
-	event := EventMessage{
+	event.Register(TestEvent{})
+	event := event.Message{
 		Data: TestEvent{
 			Foo: "bar",
 		},
-		ID:    NewEventSourceID(),
+		ID:    event.NewID(),
 		SeqID: 1,
 	}
 
-	recoder := NewInMemoryEventRecorder()
+	recoder := NewInMemoryEventStore()
 	recoder.Record(event)
 	event.SeqID = 2
 	recoder.Record(event)

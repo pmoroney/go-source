@@ -1,0 +1,13 @@
+package event
+
+// Commands
+type Command interface {
+	Handle(*Agent) error
+}
+
+type CommandMessage struct {
+	Cmd       Command
+	ID        ID
+	ErrChan   chan error
+	ZeroState state
+}

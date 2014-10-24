@@ -1,23 +1,24 @@
-package source
+package redis
 
 import (
 	"log"
 
 	"github.com/garyburd/redigo/redis"
+	"github.com/pmoroney/go-source/event"
 )
 
 // This is a simple event recorder for testing, it doesnt actually persist the events
-type RedisEventRecorder struct {
+type RedisEventStore struct {
 	pool redis.Pool
 }
 
-func NewRedisEventRecorder(pool redis.Pool) RedisEventRecorder {
-	return RedisEventRecorder{
+func NewRedisEventStore(pool redis.Pool) RedisEventStore {
+	return RedisEventStore{
 		pool: pool,
 	}
 }
 
-func (r RedisEventRecorder) Record(e EventMessage) {
+func (r RedisEventStore) Record(e event.Message) {
 	conn := r.pool.Get()
 	defer conn.Close()
 
@@ -34,7 +35,7 @@ func (r RedisEventRecorder) Record(e EventMessage) {
 	log.Printf("Recorded Event %d: %s\n", n, s)
 }
 
-func (r RedisEventRecorder) GetEvents(id EventSourceID) ([]Event, error) {
+func (r RedisEventStore) GetEvents(id event.ID) ([]event.Event, error) {
 	conn := r.pool.Get()
 	defer conn.Close()
 
@@ -43,10 +44,10 @@ func (r RedisEventRecorder) GetEvents(id EventSourceID) ([]Event, error) {
 		return nil, err
 	}
 
-	events := make([]Event, len(strings))
+	events := make([]event.Event, len(strings))
 	for i := range strings {
 		log.Printf("Received Event %d: %s\n", i, strings[i])
-		event, err := Unserialize([]byte(strings[i]))
+		event, err := event.Unserialize([]byte(strings[i]))
 		if err != nil {
 			return nil, err
 		}
