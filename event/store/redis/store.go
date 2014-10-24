@@ -18,7 +18,7 @@ func NewRedisEventStore(pool redis.Pool) RedisEventStore {
 	}
 }
 
-func (r RedisEventStore) Record(e event.Message) {
+func (r RedisEventStore) Record(e event.EventMessage) {
 	conn := r.pool.Get()
 	defer conn.Close()
 

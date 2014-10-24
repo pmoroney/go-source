@@ -17,7 +17,7 @@ type Agent struct {
 	state       State
 	seqID       uint64
 	commandChan chan CommandMessage
-	persistChan chan Message
+	persistChan chan EventMessage
 }
 
 // Apply applies an event to the state by calling state.Apply(Event)
@@ -29,7 +29,7 @@ func (agent *Agent) Apply(event Event) {
 func (agent *Agent) Persist(event Event) {
 	agent.Apply(event)
 	agent.seqID++
-	eventMsg := Message{
+	eventMsg := EventMessage{
 		Data:      event,
 		ID:        agent.id,
 		SeqID:     agent.seqID,

@@ -9,7 +9,7 @@ import (
 // This is a simple event recorder for testing, it doesnt actually persist the events
 type InMemoryEventStore struct {
 	events     map[event.ID][]event.Event
-	eventChans []chan event.Message
+	eventChans []chan event.EventMessage
 }
 
 func NewInMemoryEventStore() InMemoryEventStore {
@@ -18,7 +18,7 @@ func NewInMemoryEventStore() InMemoryEventStore {
 	}
 }
 
-func (r InMemoryEventStore) Record(e event.Message) {
+func (r InMemoryEventStore) Record(e event.EventMessage) {
 	_, ok := r.events[e.ID]
 	if !ok {
 		r.events[e.ID] = make([]event.Event, 0)
@@ -35,9 +35,9 @@ func (r InMemoryEventStore) GetEvents(id event.ID) ([]event.Event, error) {
 	return r.events[id], nil
 }
 
-func (r InMemoryEventStore) SubscribeAll(eventChan chan event.Message) {
+func (r InMemoryEventStore) SubscribeAll(eventChan chan event.EventMessage) {
 	if r.eventChans == nil {
-		r.eventChans = make([]chan event.Message, 1)
+		r.eventChans = make([]chan event.EventMessage, 1)
 	}
 	r.eventChans = append(r.eventChans, eventChan)
 }

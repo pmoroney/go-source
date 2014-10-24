@@ -13,7 +13,7 @@ type TestEvent struct {
 // Make sure we can record events
 func TestRecord(t *T) {
 	event.Register(TestEvent{})
-	event := event.Message{
+	event := event.EventMessage{
 		Data: TestEvent{
 			Foo: "bar",
 		},
@@ -37,7 +37,7 @@ func TestRecord(t *T) {
 // Make sure we can record events, even if they are the same
 func TestRecordSameEventTwice(t *T) {
 	event.Register(TestEvent{})
-	event := event.Message{
+	event := event.EventMessage{
 		Data: TestEvent{
 			Foo: "bar",
 		},

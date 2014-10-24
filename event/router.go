@@ -7,14 +7,14 @@ import "github.com/thejerf/suture"
 type Router struct {
 	agents     map[ID]chan<- CommandMessage
 	store      Store
-	persist    chan Message
+	persist    chan EventMessage
 	supervisor *suture.Supervisor
 }
 
 // SetStore creates the connection to the Event Store of choice
 func (r *Router) SetStore(store Store) {
 	r.store = store
-	r.persist = make(chan Message)
+	r.persist = make(chan EventMessage)
 }
 
 // Serve starts the router and persists all incoming events to the store

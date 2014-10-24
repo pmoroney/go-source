@@ -15,8 +15,8 @@ import (
 // * Contain all the data related to the event.
 type Event interface{}
 
-// Message contains all the metadata related to an event
-type Message struct {
+// EventMessage contains all the metadata related to an event
+type EventMessage struct {
 	ID        ID
 	SeqID     uint64
 	Timestamp time.Time
@@ -27,13 +27,13 @@ type Message struct {
 // Serialize serializes an event for storage in a Store.
 // It currently uses JSON but this can be changed.
 // A pluggable serializer would be nice as well
-func (e Message) Serialize() ([]byte, error) {
+func (e EventMessage) Serialize() ([]byte, error) {
 	return json.Marshal(e)
 }
 
 // Unserialize unserializes an event from the Store.
 // All types that are going to be unserialezed need to be registered by Registrar() or RegistrarType()
-func Unserialize(data []byte) (*Message, error) {
+func Unserialize(data []byte) (*EventMessage, error) {
 	raw := new(struct {
 		ID        ID
 		SeqID     uint64
@@ -47,7 +47,7 @@ func Unserialize(data []byte) (*Message, error) {
 		return nil, err
 	}
 
-	e := new(Message)
+	e := new(EventMessage)
 	e.ID = raw.ID
 	e.SeqID = raw.SeqID
 	e.Timestamp = raw.Timestamp

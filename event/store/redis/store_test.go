@@ -15,7 +15,7 @@ type TestEvent struct {
 // Make sure we can record events
 func TestRedisRecord(t *T) {
 	event.Register(TestEvent{})
-	event := event.Message{
+	event := event.EventMessage{
 		Data: TestEvent{
 			Foo: "bar",
 		},
@@ -57,7 +57,7 @@ func TestRedisRecord(t *T) {
 // Make sure we can record events, even if they are the same
 func TestRedisRecordSameEventTwice(t *T) {
 	event.Register(TestEvent{})
-	event := event.Message{
+	event := event.EventMessage{
 		Data: TestEvent{
 			Foo: "bar",
 		},
