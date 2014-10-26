@@ -60,9 +60,22 @@ func (a *Agent) Handle(cmd CommandMessage) {
 func (a *Agent) Serve() {
 	a.timer = *time.NewTimer(a.router.snapshotInterval)
 	// this start a goroutine that will run while the command channel is open
-	for c := range a.commandChan {
-		a.Handle(c)
+	for {
+		select {
+		case c, ok := <-a.commandChan:
+			if !ok {
+				return
+			}
+			a.Handle(c)
+
+		case <-a.timer.C:
+			a.takeSnapshot()
+			a.timer.Reset(a.router.snapshotInterval)
+		}
 	}
+}
+
+func (a *Agent) takeSnapshot() {
 }
 
 // Stop stops the agent
