@@ -17,31 +17,38 @@ type Agent struct {
 	state       State
 	seqID       uint64
 	commandChan chan CommandMessage
-	persistChan chan EventMessage
+	router      *Router
+	timer       time.Timer
 }
 
 // Apply applies an event to the state by calling state.Apply(Event)
-func (agent *Agent) Apply(event Event) {
-	agent.state.Apply(event)
+func (a *Agent) Apply(event Event) {
+	a.state.Apply(event)
+	a.seqID++
 }
 
 // Persist persists an event
-func (agent *Agent) Persist(event Event) {
-	agent.Apply(event)
-	agent.seqID++
+func (a *Agent) Persist(event Event) error {
 	eventMsg := EventMessage{
 		Data:      event,
-		ID:        agent.id,
-		SeqID:     agent.seqID,
+		ID:        a.id,
+		SeqID:     a.seqID,
 		Timestamp: time.Now(),
 		EventType: reflect.TypeOf(event).Name(),
 	}
-	agent.persistChan <- eventMsg
+
+	err := a.router.store.Record(eventMsg)
+	if err != nil {
+		return err
+	}
+
+	a.Apply(event)
+	return nil
 }
 
 // Handle calls the Handle function on the Command. If ErrChan is not nil it sends the error on that channel.
-func (agent *Agent) Handle(cmd CommandMessage) {
-	err := cmd.Cmd.Handle(agent)
+func (a *Agent) Handle(cmd CommandMessage) {
+	err := cmd.Cmd.Handle(a)
 	if cmd.ErrChan != nil {
 		go func() {
 			cmd.ErrChan <- err
@@ -50,24 +57,25 @@ func (agent *Agent) Handle(cmd CommandMessage) {
 }
 
 // Serve starts the agent, it should only be called by the router
-func (agent *Agent) Serve() {
+func (a *Agent) Serve() {
+	a.timer = *time.NewTimer(a.router.snapshotInterval)
 	// this start a goroutine that will run while the command channel is open
-	for c := range agent.commandChan {
-		agent.Handle(c)
+	for c := range a.commandChan {
+		a.Handle(c)
 	}
 }
 
 // Stop stops the agent
-func (agent *Agent) Stop() {
-	close(agent.commandChan)
+func (a *Agent) Stop() {
+	close(a.commandChan)
 }
 
 // ID returns the unique ID of the Aggregate Root
-func (agent *Agent) ID() ID {
-	return agent.id
+func (a *Agent) ID() ID {
+	return a.id
 }
 
 // State returns a copy of the state so that commands can be validated against the state
-func (agent *Agent) State() State {
-	return agent.state
+func (a *Agent) State() State {
+	return a.state
 }

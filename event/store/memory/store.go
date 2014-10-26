@@ -18,13 +18,14 @@ func NewInMemoryEventStore() InMemoryEventStore {
 	}
 }
 
-func (r InMemoryEventStore) Record(e event.EventMessage) {
+func (r InMemoryEventStore) Record(e event.EventMessage) error {
 	_, ok := r.events[e.ID]
 	if !ok {
 		r.events[e.ID] = make([]event.Event, 0)
 	}
 	r.events[e.ID] = append(r.events[e.ID], e.Data)
 	log.Printf("Recorded Event: %+v\n", e)
+	return nil
 }
 
 func (r InMemoryEventStore) GetEvents(id event.ID) ([]event.Event, error) {

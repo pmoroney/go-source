@@ -1,14 +1,19 @@
 package event
 
-import "github.com/thejerf/suture"
+import (
+	"time"
+
+	"github.com/thejerf/suture"
+)
 
 // Router creates agents and routes commands to them
 // It also retrieves Events that the Agents have persisted and passes them on to the Store
 type Router struct {
-	agents     map[ID]chan<- CommandMessage
-	store      Store
-	persist    chan EventMessage
-	supervisor *suture.Supervisor
+	agents           map[ID]chan<- CommandMessage
+	store            Store
+	persist          chan EventMessage
+	supervisor       *suture.Supervisor
+	snapshotInterval time.Duration
 }
 
 // SetStore creates the connection to the Event Store of choice
@@ -19,6 +24,7 @@ func (r *Router) SetStore(store Store) {
 
 // Serve starts the router and persists all incoming events to the store
 func (r *Router) Serve() {
+	r.snapshotInterval = 2 * time.Minute
 	r.supervisor = suture.NewSimple("Router")
 	r.supervisor.ServeBackground()
 	for event := range r.persist {
@@ -78,7 +84,7 @@ func (r *Router) newAgent(cmd CommandMessage) Agent {
 		id:          cmd.ID,
 		state:       cmd.ZeroState,
 		commandChan: commands,
-		persistChan: r.persist,
+		router:      r,
 	}
 	return ar
 }

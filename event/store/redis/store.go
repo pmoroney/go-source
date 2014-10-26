@@ -18,21 +18,22 @@ func NewRedisEventStore(pool redis.Pool) RedisEventStore {
 	}
 }
 
-func (r RedisEventStore) Record(e event.EventMessage) {
+func (r RedisEventStore) Record(e event.EventMessage) error {
 	conn := r.pool.Get()
 	defer conn.Close()
 
 	s, err := e.Serialize()
 	if err != nil {
-		log.Printf("ERROR: %s\n", err)
+		return err
 	}
 
 	n, err := conn.Do("RPUSH", e.ID.String(), s)
 	if err != nil {
-		log.Printf("ERROR: %s\n", err)
+		return err
 	}
 
 	log.Printf("Recorded Event %d: %s\n", n, s)
+	return nil
 }
 
 func (r RedisEventStore) GetEvents(id event.ID) ([]event.Event, error) {
