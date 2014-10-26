@@ -89,7 +89,7 @@ func (r *Router) newAgent(cmd CommandMessage) Agent {
 	return ar
 }
 
-func (r *Router) loadAgent(cmd CommandMessage, events []Event) Agent {
+func (r *Router) loadAgent(cmd CommandMessage, events []EventMessage) Agent {
 	ar := r.newAgent(cmd)
 
 	for i := range events {

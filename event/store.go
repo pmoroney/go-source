@@ -6,7 +6,7 @@ type Store interface {
 	Record(EventMessage) error
 
 	// Gets the recorded events, or an empty slice if none.
-	GetEvents(ID) ([]Event, error)
+	GetEvents(ID) ([]EventMessage, error)
 
 	//	SubscribeAll(chan EventMessage)
 }

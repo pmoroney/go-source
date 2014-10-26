@@ -22,8 +22,8 @@ type Agent struct {
 }
 
 // Apply applies an event to the state by calling state.Apply(Event)
-func (a *Agent) Apply(event Event) {
-	a.state.Apply(event)
+func (a *Agent) Apply(event EventMessage) {
+	a.state.Apply(event.Data)
 	a.seqID++
 }
 
@@ -32,7 +32,7 @@ func (a *Agent) Persist(event Event) error {
 	eventMsg := EventMessage{
 		Data:      event,
 		ID:        a.id,
-		SeqID:     a.seqID,
+		SeqID:     a.seqID + 1,
 		Timestamp: time.Now(),
 		EventType: reflect.TypeOf(event).Name(),
 	}
@@ -42,7 +42,7 @@ func (a *Agent) Persist(event Event) error {
 		return err
 	}
 
-	a.Apply(event)
+	a.Apply(eventMsg)
 	return nil
 }
 

@@ -36,7 +36,7 @@ func (r RedisEventStore) Record(e event.EventMessage) error {
 	return nil
 }
 
-func (r RedisEventStore) GetEvents(id event.ID) ([]event.Event, error) {
+func (r RedisEventStore) GetEvents(id event.ID) ([]event.EventMessage, error) {
 	conn := r.pool.Get()
 	defer conn.Close()
 
@@ -45,7 +45,7 @@ func (r RedisEventStore) GetEvents(id event.ID) ([]event.Event, error) {
 		return nil, err
 	}
 
-	events := make([]event.Event, len(strings))
+	events := make([]event.EventMessage, len(strings))
 	for i := range strings {
 		log.Printf("Received Event %d: %s\n", i, strings[i])
 		event, err := event.Unserialize([]byte(strings[i]))
@@ -53,7 +53,7 @@ func (r RedisEventStore) GetEvents(id event.ID) ([]event.Event, error) {
 			return nil, err
 		}
 		log.Printf("Parsed Event %d: %#v\n", i, event)
-		events[i] = event.Data
+		events[i] = *event
 	}
 
 	return events, nil
