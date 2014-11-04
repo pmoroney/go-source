@@ -9,8 +9,7 @@ type Command interface {
 
 // CommandMessage has the metadata needed for a command to be routed
 type CommandMessage struct {
-	Cmd       Command
-	ID        ID
-	ErrChan   chan error
-	ZeroState State
+	Cmd     Command
+	ID      ID
+	ErrChan chan error
 }

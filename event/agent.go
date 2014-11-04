@@ -17,8 +17,7 @@ type Agent struct {
 	state       State
 	seqID       uint64
 	commandChan chan CommandMessage
-	router      *Router
-	timer       time.Timer
+	router      Router
 }
 
 // Apply applies an event to the state by calling state.Apply(Event)
@@ -37,7 +36,7 @@ func (a *Agent) Persist(event Event) error {
 		EventType: reflect.TypeOf(event).Name(),
 	}
 
-	err := a.router.store.Record(eventMsg)
+	err := a.router.Record(eventMsg)
 	if err != nil {
 		return err
 	}
@@ -58,7 +57,7 @@ func (a *Agent) Handle(cmd CommandMessage) {
 
 // Serve starts the agent, it should only be called by the router
 func (a *Agent) Serve() {
-	a.timer = *time.NewTimer(a.router.snapshotInterval)
+	//a.timer = *time.NewTimer(a.router.SnapshotInterval())
 	// this start a goroutine that will run while the command channel is open
 	for {
 		select {
@@ -68,14 +67,18 @@ func (a *Agent) Serve() {
 			}
 			a.Handle(c)
 
-		case <-a.timer.C:
-			a.takeSnapshot()
-			a.timer.Reset(a.router.snapshotInterval)
+			/*
+					// Snapshotting should be scheduled by the router possibly...
+				case <-a.timer.C:
+					a.takeSnapshot()
+					a.timer.Reset(a.router.SnapshotInterval())
+			*/
 		}
 	}
 }
 
 func (a *Agent) takeSnapshot() {
+	// @TODO implement this :)
 }
 
 // Stop stops the agent
@@ -91,4 +94,11 @@ func (a *Agent) ID() ID {
 // State returns a copy of the state so that commands can be validated against the state
 func (a *Agent) State() State {
 	return a.state
+}
+
+func NewAgent(state State, router Router) Agent {
+	return Agent{
+		state:  state,
+		router: router,
+	}
 }

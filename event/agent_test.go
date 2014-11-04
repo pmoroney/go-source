@@ -50,7 +50,7 @@ func TestAgentPersist(t *testing.T) {
 	}
 	state := agentTestState{}
 	store := NewInMemoryEventStore()
-	router := Router{
+	router := DefaultRouter{
 		store: store,
 	}
 	agent := Agent{
