@@ -19,6 +19,7 @@ type DefaultRouter struct {
 	supervisor       *suture.Supervisor
 	snapshotInterval time.Duration
 	state            State
+	views            []chan EventMessage
 }
 
 // SetStore creates the connection to the Event Store of choice
@@ -37,7 +38,29 @@ func (r *DefaultRouter) Serve() {
 	r.supervisor.Serve()
 }
 
+// publish sends an event to any views that have subscribed
+func (r *DefaultRouter) publish(event EventMessage) {
+	for _, view := range r.views {
+		go func(v chan EventMessage) {
+			v <- event
+		}(view)
+	}
+}
+
+// Subscribe returns a channel that any views can use to pull events.
+func (r *DefaultRouter) Subscribe() chan EventMessage {
+	c := make(chan EventMessage)
+
+	if r.views == nil {
+		r.views = make([]chan EventMessage, 1)
+	}
+
+	r.views = append(r.views, c)
+	return c
+}
+
 func (r *DefaultRouter) Record(event EventMessage) error {
+	go r.publish(event)
 	return r.store.Record(event)
 }
 
